@@ -9,39 +9,27 @@ class NeuralNetwork:
         self.it = 1000000
         self.count = 4
         self.matrix = m
-        row_column = self.matrix.shape
-        self.first_l = numpy.random.uniform(-1, 1, (row_column[1], row_column[0]))
-        self.second_l = numpy.random.uniform(-1, 1, (row_column[0], 1))
+        self.first_l = numpy.random.uniform(-1, 1, (self.matrix.shape[1], self.matrix.shape[0]))
+        self.second_l = numpy.random.uniform(-1, 1, (self.matrix.shape[0], 1))
         self.jordan = numpy.zeros((1, 1))
         self.error = 0
 
     def learn(self):
-        error = 1e25
-        while error > self.max and self.it > 0:
-            error = 0
-            self.it = self.it - 1
-            self.jordan = numpy.zeros((1, 1))
+        while self.max > self.error:
+            self.error = 0
             numpy.apply_along_axis(self.vector_train, 1, self.matrix)
-            self.clear_context()
-            error_vec = numpy.apply_along_axis(self.calc_error, 1, self.matrix)
-            for i, element in numpy.ndenumerate(error_vec):
-                error = error + element
-            print("Error = ", error)
-            self.error = error
-        print(self.it, 'iters')
-        self.predict()
+            for i, element in numpy.ndenumerate(numpy.apply_along_axis(self.calc_error, 1, self.matrix)):
+                self.error = self.error + element
+        self.test()
 
-    def predict(self):
-        self.jordan = numpy.zeros((1, 1))
+    def test(self):
         numpy.apply_along_axis(self.process_vector, 1, self.matrix)
         last = self.matrix[self.matrix.shape[0]-1]
-        last[last.size-1] = 0
+        last[last.size - 1] = 0
         i = 0
         while i < self.count:
-            second_out = self.process_vector(last)
-            print("Next:", second_out)
-            last[last.size-1] = second_out
-            last = last[1:]
+            print("Next:", self.process_vector(last))
+            last[last.size-1] = self.process_vector(last)
             last = numpy.append(last, 0)
             i = i + 1
         print("Matrix \n", self.matrix)
@@ -50,17 +38,14 @@ class NeuralNetwork:
         print("Error ", self.error)
 
     def calc_error(self, vector):
-        inputs = vector[:vector.size-1]
-        target = vector[vector.size-1]
-        inputs = numpy.append(inputs, self.jordan)
+        inputs = numpy.append(vector[:vector.size-1], self.jordan)
         first_net = inputs @ self.first_l
         first_out = activation(first_net)
 
         second_net = first_out @ self.second_l
         second_out = activation(second_net)
-        self.jordan = second_out
 
-        return 1/2 * ((target - second_out[0]) ** 2)
+        return 1/2 * ((vector[vector.size-1] - second_out[0]) ** 2)
 
     def old_train(self):
         x = images
