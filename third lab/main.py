@@ -16,7 +16,7 @@ def main():
         elif choice == 2:
             seq = convert_seq(int(input('1 - Fibbonaci sequence\n2 - Periodical sequence\n3 - Factorial sequence\nPower sequence\n')))
             neural_network = NeuralNetwork(load_seq(seq))
-            neural_network.predict()
+            neural_network.test()
         else:
             print('!!! Wrong input !!!\n')
 
